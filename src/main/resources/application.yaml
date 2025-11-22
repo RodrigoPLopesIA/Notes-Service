@@ -10,5 +10,3 @@ spring:
         jwt:
           issuer-uri: http://localhost:8083/realms/notes-realm
 
-
-
