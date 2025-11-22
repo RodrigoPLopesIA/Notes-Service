@@ -59,7 +59,26 @@ services:
       - "8083:8080"
     depends_on:
       - postgres-keycloak
+  redis:
+    image: redis:7.2
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: [ "redis-server", "--appendonly", "yes" ]
+    volumes:
+      - redis_data:/data
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    restart: always
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
 
 volumes:
   mongo_data:
   keycloak_postgres:
+  redis_data:

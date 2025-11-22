@@ -9,4 +9,11 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8083/realms/notes-realm
+  cache:
+    redis:
+      host: localhost
+      port: 6379
+      username: redis
+      password:
+    type: redis
 
