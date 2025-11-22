@@ -7,6 +7,9 @@ import com.rodrigolopesai.notes_service.exceptions.NoteNotFoundException;
 import com.rodrigolopesai.notes_service.exceptions.UnauthorizedException;
 import com.rodrigolopesai.notes_service.repositories.NotesRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,11 +21,13 @@ public class NotesService {
     private final NotesRepository notesRepository;
 
     // GET ALL
+    @Cacheable(value = "notes", key = "#userId + '-all-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ResponseNoteDTO> findAll(Pageable pageable, String userId) {
         return notesRepository.findAllByUserId(pageable, userId).map(ResponseNoteDTO::new);
     }
 
     // GET BY ID
+    @Cacheable(value = "notes", key = "#userId + '-' + #id")
     public ResponseNoteDTO findById(String id, String userId) {
         var notes = notesRepository.findById(id)
                 .orElseThrow(() -> new NoteNotFoundException("Note not found"));
@@ -35,6 +40,8 @@ public class NotesService {
     }
 
     // CREATE
+    @CachePut(value = "notes", key = "#result.id")
+    @CacheEvict(value = "notes", key = "#userId + '-all-*'", allEntries = true)
     public ResponseNoteDTO create(RequestNoteDTO note, String userId) {
         Notes build = Notes.builder().content(note.content()).title(note.title()).userId(userId).build();
         Notes save = notesRepository.save(build);
@@ -42,6 +49,8 @@ public class NotesService {
     }
 
     // UPDATE
+    @CachePut(value = "notes", key = "#id")
+    @CacheEvict(value = "notes", key = "#userId + '-all-*'", allEntries = true)
     public ResponseNoteDTO update(String id, RequestNoteDTO updatedNote, String userId) {
         var existing = notesRepository.findById(id)
                 .orElseThrow(() -> new NoteNotFoundException("Note not found"));
@@ -57,6 +66,7 @@ public class NotesService {
     }
 
     // DELETE
+    @CacheEvict(value = "notes", allEntries = true)
     public void delete(String id, String userId) {
 
         var notes = notesRepository.findById(id)
