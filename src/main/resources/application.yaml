@@ -1,19 +1,26 @@
+server:
+  port: 8081
 spring:
   application:
     name: notes-service
   data:
+    redis:
+      host: redis
+      port: 6379
     mongodb:
-      uri: mongodb://localhost:27017/notesdb
+      uri: mongodb://root:root@mongodb:27017/notesdb?authSource=admin
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8083/realms/notes-realm
-  cache:
-    redis:
-      host: localhost
-      port: 6379
-      username: redis
-      password:
-    type: redis
+          issuer-uri: http://keycloak:8080/realms/notes-realm
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
 
+eureka:
+  client:
+    service-url:
+      defaultZone: http://naming-server-notes:8671/eureka
